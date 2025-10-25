@@ -7,27 +7,27 @@ use App\Core\Response;
 use App\Core\Env;
 use App\Core\DB;
 use App\Core\Request;
+use App\Core\Router;
 
 $req = new Request();
-$path = $req->path();
-$method = $req->method();
+$router = new Router();
 
-if($method == 'GET' && $path == '/api/health') {
+// Register routes
+
+$router->get('/api/health', function() {
     Response::json(['ok' => true, 'env_seen' => Env::get('DB_HOST', 'not set')]);
-}
+});
 
-if($method === 'GET' && $path == '/api/db-check') {
+$router->get('/api/db-check', function(){
     $pdo = DB::pdo();
     $now = $pdo->query('SELECT NOW() AS now_ts')->fetch()['now_ts'] ?? null;
     Response::json(['db_time' => $now]);
-}
+});
 
-if($method === 'POST' && $path == '/api/echo') {
+$router->post('/api/echo', function(Request $req) {
     $data = $req->json();
     Response::json(['you_sent' => $data]);
-}
+});
 
-// default 404 response
-http_response_code(404);
-header('Content-Type: application/json; charset=utf-8');
-echo json_encode(['error' => 'Not Found'], JSON_UNESCAPED_UNICODE);
+// Dispatch the request
+$router->dispatch($req);
