@@ -18,6 +18,7 @@ services:
 
   php:
     build: ./server/php
+    working_dir: /var/www/server
     depends_on:
       mysql:
         condition: service_healthy
