@@ -1,16 +1,18 @@
 <?php
 declare(strict_types=1);
-header('Content-Type: application/json; charset=utf-8');
 
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-$path   = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+require __DIR__ . '/../../vendor/autoload.php';
 
-// health check
-if ($method === 'GET' && $path === '/api/health') {
-    echo json_encode(['ok' => true, 'time' => date('Y-m-d H:i:s')]);
-    exit;
+use App\Core\Response;
+use App\Core\Env;
+
+$method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+
+if ($method === 'GET' && $path == '/api/health') {
+    Response::json(['ok' => true, 'env_seen' => Env::get('DB_HOST', 'not set')]);
 }
 
-//real routes here
 http_response_code(404);
-echo json_encode(['error' => 'Not found']);
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode(['error' => 'Not Found'], JSON_UNESCAPED_UNICODE);
