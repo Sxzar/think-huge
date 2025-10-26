@@ -26,4 +26,12 @@ final class Request {
         }
         return $data;
     }
+
+    public function paramIdFromPath(string $prefix): ?int {
+        $path = $this->path();
+        if(strpos($path, $prefix) !== 0) return null;
+        $rest = substr($path, strlen($prefix));
+        if(!ctype_digit($rest)) return null;
+        return (int)$rest;
+    }
 }

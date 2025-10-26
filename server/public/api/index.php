@@ -3,11 +3,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Core\Response;
-use App\Core\Env;
-use App\Core\DB;
-use App\Core\Request;
-use App\Core\Router;
+use App\Core\{Request, Response, DB, Env, Router};
+use App\Controllers\ClientController;
+use App\Models\Client;
 
 $req = new Request();
 $router = new Router();
@@ -28,6 +26,16 @@ $router->post('/api/echo', function(Request $req) {
     $data = $req->json();
     Response::json(['you_sent' => $data]);
 });
+
+// clients 
+$router->get('/api/clients', fn(Request $r) => ClientController::index($r));
+$router->post('/api/clients', fn(Request $r) => ClientController::store($r));
+// show, update, delete
+$router->get('/api/clients/', fn(Request $r) => ClientController::show($r));
+$router->put('/api/clients/', fn(Request $r) => ClientController::update($r));
+$router->delete('/api/clients/', fn(Request $r) => ClientController::destroy($r));
+
+
 
 // Dispatch the request
 $router->dispatch($req);

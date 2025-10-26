@@ -23,26 +23,44 @@ final class Router {
         $this->routes['DELETE'][$path] = $handler;
     }
 
-    public function dispatch(Request $req): void {
-        $method = $req->method();
-        $path = $req->path();
+    public function dispatch(Request $req) {
+    $method = $req->method();
+    $path   = $req->path();
 
-        $methodsForPath = array_filter(
-            $this->routes,
-            fn($routes) => array_key_exists($path, $routes)
-        );
-
-        if(empty($methodsForPath)) {
-            http_response_code(404);
-            Response::json(['error' => 'Not Found']);
-        }
-
-        if(!isset($this->routes[$method][$path])) {
-            http_response_code(405);
-            Response::json(['error' => 'Method Not Allowed']);
-        }
-
+   
+    if (isset($this->routes[$method][$path])) {
         $handler = $this->routes[$method][$path];
-        $handler($req);
+        return $handler($req);
     }
+
+    // dynamic/prefix match: any route that ends with '/' and is a prefix of $path
+    if (isset($this->routes[$method])) {
+        foreach ($this->routes[$method] as $routePath => $handler) {
+            // treat '/api/clients/' as a prefix for '/api/clients/1'
+            if ($routePath !== '/' && str_ends_with($routePath, '/') && str_starts_with($path, $routePath)) {
+                return $handler($req);
+            }
+        }
+    }
+
+    // if path exists under a different method, return 405
+    $methodsForThisPath = [];
+    foreach ($this->routes as $m => $map) {
+        if (isset($map[$path])) $methodsForThisPath[] = $m;
+        foreach ($map as $routePath => $_) {
+            if ($routePath !== '/' && str_ends_with($routePath, '/') && str_starts_with($path, $routePath)) {
+                $methodsForThisPath[] = $m;
+            }
+        }
+    }
+    if (!empty($methodsForThisPath)) {
+        http_response_code(405);
+        return Response::json(['error' => 'Method not allowed']);
+    }
+
+    // otherwise 404
+    http_response_code(404);
+    Response::json(['error' => 'Not found']);
+    }
+
 }
