@@ -19,6 +19,19 @@ docker compose run --rm php composer dump-autoload
 ```bash
 docker compose exec php php scripts/migrate.php
 ```
+
+### Seed a default admin 
+
+```bash
+docker compose exec php php scripts/seed_admin.php
+```
+
+### Optional: create or update an admin in the `admins` table with the given credentials
+
+```bash
+docker compose exec php php scripts/seed_admin.php custom@email.com custompassord
+```
+
 ### Verify created tables
 
 ```bash
