@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Core\{Request, Response, DB, Env, Router};
-use App\Controllers\ClientController;
-use App\Controllers\TransactionController;
+use App\Core\{Request, Response, DB, Env, Router, Guard};
+use App\Controllers\{ClientController, TransactionController, AuthController};
+
 
 $req = new Request();
 $router = new Router();
@@ -19,7 +19,10 @@ $router->get('/api/db-check', function () {
 
 // clients collection
 $router->get('/api/clients',  fn($r) => ClientController::index($r));
-$router->post('/api/clients', fn($r) => ClientController::store($r));
+$router->post('/api/clients', function($r){
+    Guard::requireAdmin($r);
+    ClientController::store($r);
+});
 
 
 $router->get('/api/clients/', function($r) {
@@ -31,6 +34,7 @@ $router->get('/api/clients/', function($r) {
 });
 
 $router->post('/api/clients/', function($r) {
+    Guard::requireAdmin($r);
     $p = $r->path();
     if (preg_match('#^/api/clients/\d+/transactions$#', $p)) {
         return TransactionController::store($r); // POST /api/clients/{id}/transactions
@@ -38,12 +42,37 @@ $router->post('/api/clients/', function($r) {
     return Response::json(['error' => 'Not found'], 404);
 });
 
-$router->put('/api/clients/',    fn($r) => ClientController::update($r)); // PUT /api/clients/{id}
-$router->delete('/api/clients/', fn($r) => ClientController::destroy($r)); // DELETE /api/clients/{id}
+// PUT /api/clients/{id}
+$router->put('/api/clients/',    function($r){
+    Guard::requireAdmin($r);
+    ClientController::update($r);
+});
+
+// DELETE /api/clients/{id}
+$router->delete('/api/clients/', function($r){
+    Guard::requireAdmin($r);
+    ClientController::destroy($r);
+});
 
 /* transactions update and delete by id (prefix) */
-$router->put('/api/transactions/', fn($r) => TransactionController::update($r)); // PUT /api/transactions/{id}
-$router->delete('/api/transactions/', fn($r) => TransactionController::destroy($r)); // DELETE /api/transactions/{id}
+
+
+// PUT /api/transactions/{id}
+$router->put('/api/transactions/', function($r) {
+    Guard::requireAdmin($r);
+    TransactionController::update($r); 
+});
+
+// DELETE /api/transactions/{id}
+$router->delete('/api/transactions/', function($r){
+    Guard::requireAdmin($r);
+    TransactionController::destroy($r);
+}); 
+
+/* auth */
+$router->post('/api/auth/login', fn($r)=>AuthController::login($r));
+$router->get('/api/auth/me', fn($r)=>AuthController::me($r));
+$router->post('/api/auth/logout', fn($r)=>AuthController::logout($r));
 
 /* go */
 $router->dispatch($req);
