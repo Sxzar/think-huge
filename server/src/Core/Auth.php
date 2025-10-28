@@ -32,6 +32,8 @@ final class Auth {
     public static function login(int $adminId, string $email): void {
         self::bootSession();
 
+        session_regenerate_id(true); // Prevent session fixation
+        
         $_SESSION['admin_id'] = $adminId;
         $_SESSION['admin_email'] = $email;
 
