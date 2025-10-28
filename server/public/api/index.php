@@ -4,7 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/../../vendor/autoload.php';
 
 use App\Core\{Request, Response, DB, Env, Router, Guard};
-use App\Controllers\{ClientController, TransactionController, AuthController};
+use App\Controllers\{ClientController, TransactionController, AuthController, ReportController};
 
 
 $req = new Request();
@@ -73,6 +73,12 @@ $router->delete('/api/transactions/', function($r){
 $router->post('/api/auth/login', fn($r)=>AuthController::login($r));
 $router->get('/api/auth/me', fn($r)=>AuthController::me($r));
 $router->post('/api/auth/logout', fn($r)=>AuthController::logout($r));
+
+// Reports (admin session required; GET so no CSRF header needed)
+$router->get('/api/reports/summary', function($r){
+    Guard::requireAdmin($r);
+    return ReportController::summary($r);
+});
 
 /* go */
 $router->dispatch($req);

@@ -51,7 +51,7 @@ final class TransactionController
             return Response::json(['error' => 'Invalid transaction amount'], 422);
         }
 
-        if (!self::isValidDate($occurredAt)) {
+        if (!isValidDate($occurredAt)) {
             return Response::json(['error' => 'Invalid occurred_at date. Expected format: YYYY-MM-DD'], 422);
         }
 
@@ -92,7 +92,7 @@ final class TransactionController
         if ($amount !== null && (!is_finite($amount) || $amount <= 0)) {
             return Response::json(['error' => 'Invalid transaction amount'], 422);
         }
-        if ($occurredAt !== null && !self::isValidDate($occurredAt)) {
+        if ($occurredAt !== null && !isValidDate($occurredAt)) {
             return Response::json(['error' => 'Invalid occurred_at date. Expected format: YYYY-MM-DD'], 422);
         }
         if ($description !== null && mb_strlen($description) > 255) {
@@ -130,12 +130,5 @@ final class TransactionController
             return Response::json(['error' => ' Not Found'], 404);
         }
         Response::json(['ok' => true]);
-    }
-
-    private static function isValidDate(string $s): bool
-    {
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) return false;
-        $dt = \DateTime::createFromFormat('Y-m-d', $s);
-        return $dt && $dt->format('Y-m-d') === $s;
     }
 }
