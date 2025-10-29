@@ -11,7 +11,7 @@ final class AuthController {
 
     public static function login(Request $req) {
         $data = $req->json();
-        $email = isset($data['email']) ? trim((string)$data['email']) : '';
+        $email = isset($data['email']) ? strtolower(trim((string)$data['email'])) : '';
         $password = isset($data['password']) ? (string)$data['password'] : '';
 
         if($email === '' || $password === '') {
