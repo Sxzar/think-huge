@@ -3,6 +3,7 @@ import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
 import Clients from '../pages/Clients';
 import Protected from '../components/Protected';
+import ClientDetails from '../pages/ClientDetails';
 
 export default function AppRouter() {
   return (
@@ -24,6 +25,14 @@ export default function AppRouter() {
           element={
             <Protected>
               <Clients />
+            </Protected>
+          }
+        />
+        <Route
+          path="/clients/:id"
+          element={
+            <Protected>
+              <ClientDetails />
             </Protected>
           }
         />
