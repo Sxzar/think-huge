@@ -8,8 +8,9 @@ export async function login(email: string, password: string) {
     });
 }
 
-export async function me() {
-    return http<{admin: Admin; csrf: string}>('/auth/me', { method: 'GET' });
+
+export function me() {
+  return http<{ admin: Admin; csrf: string }>('/auth/me');
 }
 
 export async function logout() {

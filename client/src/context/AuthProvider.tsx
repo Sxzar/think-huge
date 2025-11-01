@@ -4,16 +4,21 @@ import { me, login as apiLogin, logout as apiLogout } from '../api/auth';
 import { setCsrf } from '../api/http';
 import type { Admin, LoginResponse } from '../types/auth';
 
+type MeResponse = {
+  admin: Admin;
+  csrf: string;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [csrf, setCsrfState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await me();
+        const data = await me() as MeResponse;
         setAdmin(data.admin);
         setCsrfState(data.csrf);
         setCsrf(data.csrf);
@@ -28,16 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     setError(null);
     try {
-      console.log('Starting login...', { email });
       const res = await apiLogin(email, password) as LoginResponse;
-      console.log('Login response:', res);
-      // Convert the response to the expected Admin format
-      setAdmin({ id: 0, email: res.email }); 
+      // backend returns { ok, csrf, email }
+      setAdmin({ id: 0, email: res.email }); // or change backend to return admin
       setCsrfState(res.csrf);
       setCsrf(res.csrf);
-      console.log('Login successful!');
     } catch (e: unknown) {
-      console.error('Login error:', e);
       setError(e instanceof Error ? e.message : 'Login failed');
       throw e;
     }
@@ -52,5 +53,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextValue = { admin, csrf, loading, error, login, logout };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }

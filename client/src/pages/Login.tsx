@@ -29,23 +29,34 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={onSubmit} autoComplete="off" style={{ maxWidth: 360, margin: "80px auto" }}>
-      <h2>Admin Login</h2>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="email"
-        autoComplete="off"
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="password"
-        autoComplete="new-password"
-      />
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      <button disabled={submitting}>{submitting ? "..." : "Login"}</button>
-    </form>
+    <section className="min-h-dvh flex flex-col justify-center p-4">
+      <div className="bg-neutral-200 p-4 rounded-lg shadow-lg text-center max-w-screen-sm mx-auto text-neutral-900">
+        <form className="flex flex-col gap-2 p-10" onSubmit={onSubmit} autoComplete="off">
+          <h2 className="text-3xl mb-6">Admin Login</h2>
+          {error && <div className="error">{error}</div>}
+          <input
+            className="th-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email"
+            autoComplete="off"
+            name="email"
+          />
+          <input
+            className="th-input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="password"
+            autoComplete="new-password"
+            name="password"
+          />
+          
+          <button className="primary-button block mx-auto" disabled={submitting}>{submitting ? "..." : "Login"}</button>
+        </form>
+      </div>  
+
+    </section>
+
   );
 }
