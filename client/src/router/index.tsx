@@ -4,6 +4,7 @@ import Dashboard from '../pages/Dashboard';
 import Clients from '../pages/Clients';
 import Protected from '../components/Protected';
 import ClientDetails from '../pages/ClientDetails';
+import Admins from '../pages/Admins';
 
 export default function AppRouter() {
   return (
@@ -33,6 +34,14 @@ export default function AppRouter() {
           element={
             <Protected>
               <ClientDetails />
+            </Protected>
+          }
+        />
+        <Route
+          path="/admins"
+          element={
+            <Protected>
+              <Admins />
             </Protected>
           }
         />

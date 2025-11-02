@@ -4,7 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/../../vendor/autoload.php';
 
 use App\Core\{Request, Response, DB, Env, Router, Guard};
-use App\Controllers\{ClientController, TransactionController, AuthController, ReportController};
+use App\Controllers\{ClientController, TransactionController, AuthController, ReportController, AdminController};
 
 
 $req = new Request();
@@ -79,6 +79,13 @@ $router->get('/api/reports/summary', function($r){
     Guard::requireAdmin($r);
     return ReportController::summary($r);
 });
+
+
+// Admins management
+$router->get('/api/admins', fn($r) => AdminController::index($r));
+$router->post('/api/admins', fn($r) => AdminController::store($r));
+$router->put('/api/admins/', fn($r) => AdminController::update($r));
+$router->delete('/api/admins/', fn($r) => AdminController::destroy($r));
 
 /* go */
 $router->dispatch($req);

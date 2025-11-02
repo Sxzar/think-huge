@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { getSummary } from "../api/reports";
 import type { ReportSummary } from "../types/reports";
 import { AppLayout } from "../layouts/AppLayout";
+import { FilterBar } from "../components/filters/FilterBar";
 
 export default function Dashboard() {
   const [report, setReport] = useState<ReportSummary | null>(null);
@@ -11,67 +13,76 @@ export default function Dashboard() {
     from: "",
     to: "",
   });
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const navigate = useNavigate();
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getSummary({
         client_id: filters.client_id ? Number(filters.client_id) : undefined,
         from: filters.from || undefined,
         to: filters.to || undefined,
+        page,
+        limit,
       });
       setReport(data);
     } finally {
       setLoading(false);
     }
-  }
+  }, [filters.client_id, filters.from, filters.to, page, limit]);
 
-  // 🔹 Automatically load all transactions when the page opens
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
+
+  function handleClear() {
+    setFilters({ client_id: "", from: "", to: "" });
+    setPage(1);
+    setTimeout(() => load(), 0);
+  }
 
   return (
     <AppLayout title="Dashboard">
-      {/* filters */}
-      <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Client ID</label>
-            <input
-              type="number"
-              className="border rounded px-2 py-1 w-32"
-              value={filters.client_id}
-              onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">From</label>
-            <input
-              type="date"
-              className="border rounded px-2 py-1"
-              value={filters.from}
-              onChange={(e) => setFilters({ ...filters, from: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">To</label>
-            <input
-              type="date"
-              className="border rounded px-2 py-1"
-              value={filters.to}
-              onChange={(e) => setFilters({ ...filters, to: e.target.value })}
-            />
-          </div>
-          <button
-            onClick={load}
-            disabled={loading}
-            className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-          >
-            {loading ? "Loading..." : "Apply Filters"}
-          </button>
+      <FilterBar onApply={load} onClear={handleClear} loading={loading}>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Client ID</label>
+          <input
+            type="number"
+            className="border rounded px-2 py-1 w-32"
+            value={filters.client_id}
+            onChange={(e) => {
+              setFilters({ ...filters, client_id: e.target.value });
+              setPage(1);
+            }}
+          />
         </div>
-      </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">From</label>
+          <input
+            type="date"
+            className="border rounded px-2 py-1"
+            value={filters.from}
+            onChange={(e) => {
+              setFilters({ ...filters, from: e.target.value });
+              setPage(1);
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">To</label>
+          <input
+            type="date"
+            className="border rounded px-2 py-1"
+            value={filters.to}
+            onChange={(e) => {
+              setFilters({ ...filters, to: e.target.value });
+              setPage(1);
+            }}
+          />
+        </div>
+      </FilterBar>
 
       {/* table of transactions */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -118,8 +129,24 @@ export default function Dashboard() {
               ) : (
                 report.movements.data.map((tx) => (
                   <tr key={tx.id} className="border-b last:border-b-0">
-                    <td className="px-4 py-2">{tx.id}</td>
-                    <td className="px-4 py-2">{tx.client_id}</td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() =>
+                          navigate(`/clients/${tx.client_id}?tx=${tx.id}`)
+                        }
+                        className="text-blue-600 hover:underline"
+                      >
+                        {tx.id}
+                      </button>
+                    </td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => navigate(`/clients/${tx.client_id}`)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {tx.client_id}
+                      </button>
+                    </td>
                     <td className="px-4 py-2">
                       <span
                         className={
@@ -132,7 +159,9 @@ export default function Dashboard() {
                       </span>
                     </td>
                     <td className="px-4 py-2">
-                      {typeof tx.amount === "string" ? tx.amount : tx.amount.toFixed(2)}
+                      {typeof tx.amount === "string"
+                        ? tx.amount
+                        : tx.amount.toFixed(2)}
                     </td>
                     <td className="px-4 py-2">{tx.description ?? "-"}</td>
                     <td className="px-4 py-2">{tx.occurred_at}</td>
@@ -142,6 +171,27 @@ export default function Dashboard() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* pagination */}
+        <div className="px-6 py-3 flex items-center gap-3">
+          <button
+            disabled={page <= 1 || loading}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="px-3 py-1.5 bg-white border rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span className="text-sm text-gray-500">
+            Page {page} / {report ? report.movements.pages : 1}
+          </span>
+          <button
+            disabled={!report || page >= report.movements.pages || loading}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-3 py-1.5 bg-white border rounded disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       </div>
     </AppLayout>

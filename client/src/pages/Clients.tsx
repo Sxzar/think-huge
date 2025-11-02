@@ -5,14 +5,15 @@ import {
   listClients,
   deleteClient,
   updateClient,
-  addClientTransaction,
   createClient,
   type Client,
 } from '../api/clients';
-import { DeleteModal } from '../components/modals/DeleteModal';
-import { EditClientModal } from '../components/modals/EditClientModal';
-import { TransactionModal } from '../components/modals/TransactionModal';
-import { CreateClientModal } from '../components/modals/CreateClientModal';
+import { addClientTransaction } from '../api/transactions';
+
+import { Modal } from "../components/ui/Modal";
+import { ClientForm } from "../components/forms/ClientForm";
+import { TransactionForm } from "../components/forms/TransactionForm";
+import { ConfirmModal } from "../components/modals/ConfirmModal";
 
 type ModalMode =
   | { type: "none" }
@@ -227,54 +228,73 @@ export default function Clients() {
         </button>
       </div>
 
-      {/* modals */}
+      {/* edit / earning / expense – wrapped in Modal */}
+      {modal.type !== "none" && modal.type !== "delete" && (
+        <Modal
+          onClose={() => setModal({ type: "none" })}
+          title={
+            modal.type === "edit"
+              ? `Edit client #${modal.client.id}`
+              : modal.type === "earning"
+              ? `Add earning to ${modal.client.name}`
+              : `Add expense to ${modal.client.name}`
+          }
+        >
+          {modal.type === "edit" && (
+            <ClientForm
+              initial={modal.client}
+              onCancel={() => setModal({ type: "none" })}
+              onSubmit={async (payload) => {
+                await handleUpdate(modal.client.id, payload);
+              }}
+            />
+          )}
+
+          {modal.type === "earning" && (
+            <TransactionForm
+              type="earning"
+              onCancel={() => setModal({ type: "none" })}
+              onSubmit={async (payload) => {
+                await handleAddTransaction(modal.client.id, payload);
+              }}
+            />
+          )}
+
+          {modal.type === "expense" && (
+            <TransactionForm
+              type="expense"
+              onCancel={() => setModal({ type: "none" })}
+              onSubmit={async (payload) => {
+                await handleAddTransaction(modal.client.id, payload);
+              }}
+            />
+          )}
+        </Modal>
+      )}
+
+      {/* delete – NOT wrapped in Modal */}
       {modal.type === "delete" && (
-        <DeleteModal
-          client={modal.client}
-          onClose={() => setModal({ type: "none" })}
-          onConfirm={() => handleDelete(modal.client.id)}
-        />
-      )}
-
-      {modal.type === "edit" && (
-        <EditClientModal
-          client={modal.client}
-          onClose={() => setModal({ type: "none" })}
-          onSave={(payload) => handleUpdate(modal.client.id, payload)}
-        />
-      )}
-
-      {modal.type === "earning" && (
-        <TransactionModal
-          client={modal.client}
-          type="earning"
-          onClose={() => setModal({ type: "none" })}
-          onSubmit={(payload) =>
-            handleAddTransaction(modal.client.id, payload)
-          }
-        />
-      )}
-
-      {modal.type === "expense" && (
-        <TransactionModal
-          client={modal.client}
-          type="expense"
-          onClose={() => setModal({ type: "none" })}
-          onSubmit={(payload) =>
-            handleAddTransaction(modal.client.id, payload)
-          }
-        />
-      )}
-
-      {showCreate && (
-        <CreateClientModal
-          onClose={() => setShowCreate(false)}
-          onCreate={async (payload) => {
-            await createClient(payload);
-            setShowCreate(false);
-            load(page);
+        <ConfirmModal
+          message={`Are you sure you want to delete client "${modal.client.name}"? This cannot be undone.`}
+          onCancel={() => setModal({ type: "none" })}
+          onConfirm={async () => {
+            await handleDelete(modal.client.id);
           }}
         />
+      )}
+
+      {/* create */}
+      {showCreate && (
+        <Modal onClose={() => setShowCreate(false)} title="Create client">
+          <ClientForm
+            onCancel={() => setShowCreate(false)}
+            onSubmit={async (payload) => {
+              await createClient(payload);
+              setShowCreate(false);
+              load(page);
+            }}
+          />
+        </Modal>
       )}
     </AppLayout>
   );

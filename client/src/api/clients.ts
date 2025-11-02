@@ -40,18 +40,3 @@ export function deleteClient(id: number) {
         method: 'DELETE',
     });
 }
-
-export function addClientTransaction(
-    clientId: number,
-    payload: {
-        type: "earning" | "expense";
-        amount: number;
-        occurred_at: string;
-        description?: string;
-    }
-) {
-    return http(`/clients/${clientId}/transactions`, {
-        method: "POST",
-        body: payload,
-    });
-}
