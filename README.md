@@ -135,6 +135,7 @@ ENVIRONMENT:
 ## IV. PROJECT STRUCTURE
 ---
 
+```
 root/
 ├─ server/
 │  ├─ migrations/    → SQL migration files for creating DB tabels
@@ -170,6 +171,7 @@ root/
 │      └─ main.tsx       → Application entry point
 ├─ docker-compose.yml
 └─ README.txt
+```
 
 ## V. FUNCTIONALITY OVERVIEW
 ---
