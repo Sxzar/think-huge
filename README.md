@@ -153,7 +153,7 @@ root/
 │  └─ composer.lock
 │
 ├─ client/
-│  ├─ src/
+│  └─ src/
 │      ├─ api/           → API handlers for backend communication
 │      ├─ assets/           → Project fonts and main CSS file
 │      ├─ components/    → Modals, forms, and UI elements
