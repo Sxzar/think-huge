@@ -1,4 +1,4 @@
-# THINKHUGE TEST PROJECT DOCUMENTATION
+# THINKHUGE TEST PROJECT DOCUMENTATION [![wakatime](https://wakatime.com/badge/user/f45ae7fa-16e6-4538-a18d-858742388637/project/d75774d0-9f45-4a07-a93b-9d1892bf44a5.svg)](https://wakatime.com/badge/user/f45ae7fa-16e6-4538-a18d-858742388637/project/d75774d0-9f45-4a07-a93b-9d1892bf44a5)
 ---
 
 Author: Stefan Nicolau
